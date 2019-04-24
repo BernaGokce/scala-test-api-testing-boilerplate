@@ -5,7 +5,7 @@ class Demo {
 
   def total(num1:Int, num2:Int) :Int = {
     println("Adding..")
-    num1 - num2
+    num1 + num2
   }
 
 }

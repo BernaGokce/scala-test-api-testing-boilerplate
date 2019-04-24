@@ -173,5 +173,4 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     }
   }
 
-
 }

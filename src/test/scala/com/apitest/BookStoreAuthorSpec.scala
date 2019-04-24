@@ -6,7 +6,7 @@ import io.circe.{Json, JsonObject}
 import org.scalatest.Matchers._
 import org.scalatest.{BeforeAndAfter, FeatureSpec, GivenWhenThen}
 
-class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndAfter with DatabaseSupport with HttpSupport {
+class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndAfter with DatabaseSupport with HttpSupport with JsonConfigSupport {
   info("As bookstore user")
   info("I want to see authors detail")
   info("So that I can have all author information")
@@ -23,6 +23,8 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
   var authorId = ""
   var authorName = ""
 
+  val createAuthorPath: Uri = getUrl("core", "local", "createAuthor")
+
   feature("Authors Operation") {
     scenario("Create Author") {
       Given("I set create author body")
@@ -36,7 +38,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
 
       When("I send create author request")
       val request = sttp
-        .post(uri"http://localhost:8085/authors")
+        .post(createAuthorPath)
         .body(requestPayload)
         .response(asJson[JsonObject])
 
