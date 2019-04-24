@@ -8,7 +8,7 @@ import io.circe.{Json, JsonObject}
 import org.scalatest.Matchers._
 import org.scalatest.{BeforeAndAfter, FeatureSpec, GivenWhenThen}
 
-class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAfter with DatabaseSupport with HttpSupport {
+class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAfter with DatabaseSupport with HttpSupport with JsonConfigSupport {
   info("As bookstore user")
   info("I want to see books detail")
   info("So that I can have all book information")
@@ -17,6 +17,8 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
   var bookName = ""
   var bookAuthorName = ""
   var bookId = ""
+  val AuthorPath: Uri = getUrl("Author")
+  val BookPath: Uri = getUrl("Book")
 
   feature("Books Operation") {
     scenario("Create books for specific author") {
@@ -35,14 +37,14 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
 
       When("I send create author request")
       val request = sttp
-        .post(uri"http://localhost:8085/authors/$authorId/books")
+        .post(expandPath(AuthorPath,authorId.toString,"books"))
         .body(requestPayload)
         .response(asJson[JsonObject])
 
       val response = request.send()
 
       Then("Response should be 201")
-      response.code should equal(201)
+      checkResponseCode(response, 201)
 
       Then("Create book response body should include id")
       val body = checkAndGetJsonBody(response)
@@ -67,7 +69,7 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     scenario("Get author specific books") {
       When("I send get books for specific author endpoint")
       val request = sttp
-        .get(uri"http://localhost:8085/authors/$authorId/books/$bookId")
+        .get(expandPath(AuthorPath,authorId.toString,"books",bookId))
         .response(asJson[JsonObject])
 
       val response = request.send()
@@ -92,7 +94,7 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     scenario("Get all books") {
       When("I send get all books request")
       val request = sttp
-        .get(uri"http://localhost:8085/books")
+        .get(BookPath)
         .response(asJson[List[Json]])
       val response = request.send()
 
@@ -104,7 +106,7 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     scenario("Get books via its name") {
       When("I send get books via its name")
       val request = sttp
-        .get(uri"http://localhost:8085/books?name=$bookName")
+        .get(BookPath.param("name", bookName))
         .response(asJson[List[Json]])
       val response = request.send()
 
@@ -123,7 +125,7 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
         )
       When("I send change book information")
       val request = sttp
-        .put(uri"http://localhost:8085/authors/$authorId/books/$bookId")
+        .put(expandPath(AuthorPath,authorId.toString,"books",bookId))
         .body(requestPayload)
         .response(asJson[JsonObject])
 
@@ -150,7 +152,7 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     scenario("Author should not be deleted if he/she has book"){
       When("I send delete request for author who has book")
       val request = sttp
-        .delete(uri"http://localhost:8085/authors/$authorId")
+        .delete(expandPath(AuthorPath, authorId.toString))
         .response(asJson[JsonObject])
 
       val response = request.send()
@@ -162,13 +164,13 @@ class BookStoreBookSpec extends FeatureSpec with GivenWhenThen with BeforeAndAft
     scenario("Delete book") {
       When("I send delete request to book")
       val request = sttp
-        .delete(uri"http://localhost:8085/authors/$authorId/books/$bookId")
+        .delete(expandPath(AuthorPath,authorId.toString,"books",bookId))
         .response(asJson[JsonObject])
 
       val response = request.send()
 
       Then("Response should be 200")
-      response.code should equal(200)
+      checkResponseCode(response, 200)
 
     }
   }

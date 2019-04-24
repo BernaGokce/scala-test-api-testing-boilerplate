@@ -8,11 +8,16 @@ import io.circe.parser.parse
 import scala.io.Source
 
 trait JsonConfigSupport {
+  val currentEnvironment: String = Option(System.getenv("ENV")).getOrElse("local")
+  val currentService: String     = Option(System.getenv("SERVICE")).getOrElse("core")
+
   def getUrl(service: String, environment: String, path: String): Uri = {
-    val host: String = getKey(environmentMap, service, environment).getOrElse(throw new Exception(s"Cannot find service $service in $environment"))
+    val host: String = getKey(environmentMap, service, environment).getOrElse(throw new Exception(s"Cannot find service $service in $environment environment"))
     val urlPath: String = getKey(urlsMap, service, path).getOrElse(throw new Exception(s"Cannot find path $path in service $service"))
     Uri(new URI(s"$host/$urlPath"))
   }
+
+  def getUrl(path: String): Uri = getUrl(currentService, currentEnvironment, path)
 
   private val environmentMap: Map[String, Map[String, String]] = parseConfig("src/test/resources/env.json")
   private val urlsMap: Map[String, Map[String, String]]        = parseConfig("src/test/resources/urls.json")

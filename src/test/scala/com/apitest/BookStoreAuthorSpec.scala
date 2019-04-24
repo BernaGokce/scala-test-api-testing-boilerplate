@@ -23,7 +23,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
   var authorId = ""
   var authorName = ""
 
-  val createAuthorPath: Uri = getUrl("core", "local", "createAuthor")
+  val AuthorPath: Uri = getUrl("Author")
 
   feature("Authors Operation") {
     scenario("Create Author") {
@@ -38,14 +38,14 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
 
       When("I send create author request")
       val request = sttp
-        .post(createAuthorPath)
+        .post(AuthorPath)
         .body(requestPayload)
         .response(asJson[JsonObject])
 
       val response = request.send()
 
       Then("Response should be 201")
-      response.code should equal(201)
+      checkResponseCode(response, 201)
 
       Then("Create author response body should include id")
       val body = checkAndGetJsonBody(response)
@@ -60,7 +60,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
     scenario("Get All Authors") {
       When("I send get all authors request")
       val request = sttp
-        .get(uri"http://localhost:8085/authors")
+        .get(AuthorPath)
         .response(asJson[List[Json]])
 
       val response = request.send()
@@ -73,7 +73,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
     scenario("Get Specific Author") {
       When("I send get specific author request")
       val request = sttp
-        .get(uri"http://localhost:8085/authors/$authorId")
+        .get(expandPath(AuthorPath,authorId))
         .response(asJson[JsonObject])
 
       val response = request.send()
@@ -91,7 +91,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
     scenario("Get Specific Author via name") {
       When("I send get specific author via name request")
       val request = sttp
-        .get(uri"http://localhost:8085/authors?name=$authorName")
+        .get(AuthorPath.param("name",authorName))
         .response(asJson[List[Json]])
 
       val response = request.send()
@@ -110,7 +110,7 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
 
       When("I send update author name request")
       val request = sttp
-        .put(uri"http://localhost:8085/authors/$authorId")
+        .put(expandPath(AuthorPath,authorId))
         .body(requestPayload)
         .response(asJson[JsonObject])
 
@@ -125,13 +125,13 @@ class BookStoreAuthorSpec extends FeatureSpec with GivenWhenThen with BeforeAndA
     scenario("Delete Author") {
       When("I send delete request")
       val request = sttp
-        .delete(uri"http://localhost:8085/authors/$authorId")
+        .delete(expandPath(AuthorPath,authorId))
         .response(asJson[JsonObject])
 
       val response = request.send()
 
       Then("Response should be 200")
-      response.code should equal(200)
+      checkResponseCode(response, 200)
     }
   }
 }
